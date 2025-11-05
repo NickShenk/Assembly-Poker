@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project", "Project.vcxproj", "{4164AA65-1EF9-4E69-899B-D1BED776070B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A9A10CA-CB73-42A9-8530-5B9AC4C98180}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "old", "old", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		5.2_Task3.asm = 5.2_Task3.asm
+		AddThree.asm = AddThree.asm
+		AddTwo.asm = AddTwo.asm
+		AddTwo.inc = AddTwo.inc
+		AddTwoProc.asm = AddTwoProc.asm
+		AddVariables.asm = AddVariables.asm
+		CenterX.asm = CenterX.asm
+		Chapte4-Task1_Movx_Offsets.asm = Chapte4-Task1_Movx_Offsets.asm
+		chapter4-Task2-FlagsDemo.asm = chapter4-Task2-FlagsDemo.asm
+		chapter4-Task3-FlagsDemo.asm = chapter4-Task3-FlagsDemo.asm
+		Lab5.1_Task4.asm = Lab5.1_Task4.asm
+		Lab5.2_task1.asm = Lab5.2_task1.asm
+		lab_4.2_task1.asm = lab_4.2_task1.asm
+		Lab_4.2_task3.asm = Lab_4.2_task3.asm
+		lab_4.2_task4.asm = lab_4.2_task4.asm
+		Lab_4.2_task5.asm = Lab_4.2_task5.asm
+		Lab_4.2_task5pt2.asm = Lab_4.2_task5pt2.asm
+		Lab_4.2_taskTWO.asm = Lab_4.2_taskTWO.asm
+		Lab_5.1_Task1A.asm = Lab_5.1_Task1A.asm
+		lab_5.1_Task1B.asm = lab_5.1_Task1B.asm
+		lab_5.1_task1c.asm = lab_5.1_task1c.asm
+		Lab_5.1_task2.asm = Lab_5.1_task2.asm
+		LAB_6.1_.TASK2.asm = LAB_6.1_.TASK2.asm
+		LAB_6.22_TASK1.asm = LAB_6.22_TASK1.asm
+		LAB_6.2_TASK1.asm = LAB_6.2_TASK1.asm
+		main.asm = main.asm
+		MyAddTwo.asm = MyAddTwo.asm
+		..\Irvine\Examples\ch06\32 bit\TASK2LAB6.2.asm = ..\Irvine\Examples\ch06\32 bit\TASK2LAB6.2.asm
+		..\Irvine\Examples\ch06\32 bit\TASK2LAB6.2B.asm = ..\Irvine\Examples\ch06\32 bit\TASK2LAB6.2B.asm
+		TASK3LAB6.2.asm = TASK3LAB6.2.asm
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4164AA65-1EF9-4E69-899B-D1BED776070B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4164AA65-1EF9-4E69-899B-D1BED776070B}.Debug|Win32.Build.0 = Debug|Win32
+		{4164AA65-1EF9-4E69-899B-D1BED776070B}.Release|Win32.ActiveCfg = Release|Win32
+		{4164AA65-1EF9-4E69-899B-D1BED776070B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {446BA9C7-2811-49BF-8588-BD360AD62AAB}
+	EndGlobalSection
+EndGlobal
