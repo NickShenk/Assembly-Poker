@@ -5,7 +5,7 @@ INCLUDE Irvine32.inc
 welcomeMsg BYTE "Welcome to MASM Poker!", 0
 promptMsg  BYTE "Enter your name: ", 0
 greetMsg   BYTE "Hello, ", 0
-nameBuffer BYTE 32 DUP(0)         ; Buffer for up to 31-character name
+nameBuffer BYTE 32 DUP(0)
 
 ; === Menu Data Section ===
 menuMsg    BYTE 0Dh,0Ah,"Main Menu:",0Dh,0Ah,\
@@ -22,7 +22,7 @@ leftNameMsg     BYTE " [Jeff] $900  Bet:  0",0
 centerTitleMsg  BYTE 0Dh,0Ah,"====== COMMUNITY CARDS ======   Pot: $120   Street: FLOP",0Dh,0Ah,0
 centerCardsMsg  BYTE "   [AH][TS][8C][  ][  ]",0Dh,0Ah,0
 rightNameMsg    BYTE " [Joe] $2150 Bet:  40",0Dh,0Ah,0
-bottomNameMsg   BYTE 0Dh,0Ah,"      * YOU *   $1125 Bet:  80",0Dh,0Ah,0
+bottomNameMsg   BYTE 0Dh,0Ah,"    * YOU *   $1125 Bet:  80",0Dh,0Ah,0
 
 .code
 main PROC
@@ -45,15 +45,14 @@ main PROC
     call WriteString
     call Crlf
 
-    ; === Menu Section (render and handle options) ===
+    ; menu baby
 mainMenu:
-    mov edx, OFFSET menuMsg       ; Print the menu options
+    mov edx, OFFSET menuMsg      ; Print the menu options
     call WriteString
     mov edx, OFFSET inputBuffer
     mov ecx, 7
     call ReadString
 
-    ; Process user selection here
     mov edx, OFFSET inputBuffer
     mov al, [edx]
     cmp al, '1'
@@ -61,14 +60,13 @@ mainMenu:
     cmp al, '2'
     je doQuit
 
-    ; If input is invalid, show the prompt and repeat
     call Crlf
     mov edx, OFFSET promptMsg
     call WriteString
     jmp mainMenu
 
 doStart:
-    call DrawPokerTable              ; Draw table on start
+    call DrawPokerTable
     jmp mainMenu
 
 doQuit:
@@ -77,25 +75,36 @@ doQuit:
     exit
 main ENDP
 
-; === Table Drawing Section: Clears screen and shows table players layout and chips ===
+; table draw
 DrawPokerTable PROC
-    call Clrscr                       ; Clear terminal for clean redraw
+    call Clrscr                       ; Clear terminal
 
     ; Draw top player
     mov edx, OFFSET topNameMsg
     call WriteString
 
-    ; Draw left seat, community, right seat
+    ; Draw left seat
     mov edx, OFFSET leftNameMsg
     call WriteString
+
+    ; yellow
+    mov eax, yellow + (black * 16)
+    call SetTextColor
     mov edx, OFFSET centerTitleMsg
     call WriteString
+
+    ; light reeed
+    mov eax, lightRed + (black * 16)
+    call SetTextColor
     mov edx, OFFSET centerCardsMsg
     call WriteString
+
+    ; we gotta reest here
+    mov eax, white + (black * 16)
+    call SetTextColor
     mov edx, OFFSET rightNameMsg
     call WriteString
 
-    ; Draw bottom player (YOU, marked with star)
     mov edx, OFFSET bottomNameMsg
     call WriteString
 
