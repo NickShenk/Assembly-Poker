@@ -1,6 +1,6 @@
-;  5 yea
-;  Centralized rendering of the table for reuse.
-; What: ShowTable prints both hands, chips, bets, and pot.
+; COMMIT 6
+; Why: Add a tiny betting interaction so pot/chips change.
+; What: Human: C/R/F. AI randomly folds/checks/calls. Uses WORD money.
 
 INCLUDE Irvine32.inc
 
@@ -30,9 +30,16 @@ chipmsg BYTE "  Chips: $",0
 betmsg  BYTE "  Bet: $",0
 potmsg  BYTE 0Dh,0Ah,"POT: $",0
 
+yourTurn BYTE 0Dh,0Ah,"Your turn - (C)all, (R)aise $10, (F)old: ",0
+aiCallStr  BYTE "AI calls",0Dh,0Ah,0
+aiCheckStr BYTE "AI checks",0Dh,0Ah,0
+aiFoldStr  BYTE "AI folds",0Dh,0Ah,0
+
+raiseAmt WORD 10
+
 .code
 
-; --- SimpleShuffle
+; SimpleShuffle
 SimpleShuffle PROC
     push eax ebx ecx
     mov ecx, 30
@@ -53,7 +60,7 @@ SimpleShuffle PROC
     ret
 SimpleShuffle ENDP
 
-; --- PrintCard
+; PrintCard
 PrintCard PROC
     push eax
     push edx
@@ -91,11 +98,9 @@ PrintCard ENDP
 ShowTable PROC
     push eax
     push edx
-
     call Clrscr
     mov edx, OFFSET gameTitle
     call WriteString
-
     ; P1
     mov edx, OFFSET p1msg
     call WriteString
@@ -106,20 +111,17 @@ ShowTable PROC
     mov al, p1card2
     call PrintCard
     call Crlf
-
     mov edx, OFFSET chipmsg
     call WriteString
     movzx eax, p1chips
     call WriteDec
     call Crlf
-
     mov edx, OFFSET betmsg
     call WriteString
     movzx eax, p1bet
     call WriteDec
     call Crlf
     call Crlf
-
     ; P2
     mov edx, OFFSET p2msg
     call WriteString
@@ -130,35 +132,124 @@ ShowTable PROC
     mov al, p2card2
     call PrintCard
     call Crlf
-
     mov edx, OFFSET chipmsg
     call WriteString
     movzx eax, p2chips
     call WriteDec
     call Crlf
-
     mov edx, OFFSET betmsg
     call WriteString
     movzx eax, p2bet
     call WriteDec
     call Crlf
-
     ; Pot
     mov edx, OFFSET potmsg
     call WriteString
     movzx eax, pot
     call WriteDec
     call Crlf
-
     pop edx
     pop eax
     ret
 ShowTable ENDP
 
+BettingRound PROC
+    push eax
+    push ebx
+    push ecx
+    push edx
+
+    ; Human
+    mov edx, OFFSET yourTurn
+    call WriteString
+    call ReadChar
+    call WriteChar
+    call Crlf
+
+    cmp al,'F'
+    je @p1fold
+    cmp al,'f'
+    je @p1fold
+    cmp al,'R'
+    je @p1raise
+    cmp al,'r'
+    je @p1raise
+
+    ; default call/check
+    mov ax, currentBet
+    mov bx, p1bet
+    sub ax, bx
+    cmp ax,0
+    je @p1done
+    add p1bet, ax
+    sub p1chips, ax
+    add pot, ax
+    jmp @p1done
+
+@p1raise:
+    mov ax, raiseAmt
+    add currentBet, ax
+    mov ax, currentBet
+    mov bx, p1bet
+    sub ax, bx
+    add p1bet, ax
+    sub p1chips, ax
+    add pot, ax
+    jmp @p1done
+
+@p1fold:
+    mov ax, pot
+    add p2chips, ax
+    mov pot, 0
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+
+@p1done:
+    ; AI decision
+    mov eax,100
+    call RandomRange
+    cmp eax,20
+    jl @aifold
+
+    ; call/check
+    mov ax, currentBet
+    mov bx, p2bet
+    sub ax, bx
+    cmp ax,0
+    je @aicheck
+    add p2bet, ax
+    sub p2chips, ax
+    add pot, ax
+    mov edx, OFFSET aiCallStr
+    call WriteString
+    jmp @done
+
+@aicheck:
+    mov edx, OFFSET aiCheckStr
+    call WriteString
+    jmp @done
+
+@aifold:
+    mov ax, pot
+    add p1chips, ax
+    mov pot, 0
+    mov edx, OFFSET aiFoldStr
+    call WriteString
+
+@done:
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+BettingRound ENDP
+
 main PROC
     call Randomize
     call SimpleShuffle
-
     mov al, deck[0]
     mov p1card1, al
     mov al, deck[1]
@@ -169,6 +260,9 @@ main PROC
     mov p2card2, al
 
     call ShowTable
+    call BettingRound
+    call ShowTable
+
     INVOKE ExitProcess, 0
 main ENDP
 END main
