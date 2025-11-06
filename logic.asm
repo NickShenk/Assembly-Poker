@@ -158,27 +158,69 @@ main PROC
     ; calc player's card values
     mov eax, 0
     call calcSum ; this will make ecx the value of the cards combined and set soft to 1 or 0
+    jmp playerTurn
+
+
+    hit:
     mov edx, 0
+    inc ebx
     mov dl, cards[ebx * TYPE card].value ; used to store new card value
+    ; jump ahead if dl > 0
+    cmp dl, 0
+    jg handleCard
+    ; this means we picked up an ace
+    ; jump ahead if ecx > 10
+    cmp ecx, 10
+    jg handleCard:
+    ; else we have an ace acting as 11 and it needs to be changed to soft
+    mov players[eax].soft, 1
+    mov edx, 10
 
+    handleCard:
+    add ecx, edx
+    add ecx, 1
+    ; check if bust, check if soft then sub ten if soft
+    cmp ecx, 21
+    jle playerTurn
 
-    decision:
+    ; bust territory
+    cmp players[eax].soft, 0
+    je youLose
+
+    ; has a soft hand so we can subtract 10 and continue
+    sub ecx, 10
+    mov players[eax].soft, 0
+    
+    playerTurn:
+    ; CHRIS : display their hand amount and cards(optional for cards)
     ; Player chooses hit, stay (if hit continue to hit)
 
 
-    ; if hit
-    inc ebx; pick card off top of deck
+    ; CHRIS : Take choice input
+    
+    ; choice (jump if choice condition is met, else stay)
+    jmp hit ; remake decision
 
 
-    ; if stay, just continue to dealer's turn
+    ; dealer chooses hit/stay ; make sure to mul * TYPE Player to eax for calc sum
+    mov edx, TYPLE Player
+    mul eax, edx
+    mov edx, 0
+    push ecx ; push player's hand value to stack
+    calcSum ; dealer's hand is now in ecx
+    mov edx, ecx
+    pop ecx ; return player's hand to dealer
 
-    ; dealer chooses hit/stay
+    ; dealer hits while their hand is less than 17 or until above player's
 
+    ; CHRIS I will store dealer's end hand value in edx display it
     ; winner decided
 
     youLost:
+    ; CHRIS add a "you lose" message
 
     youWon:
+    ; CHRIS add a "you won" message
 
     call ExitProcess
   quit:
