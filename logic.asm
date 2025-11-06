@@ -27,6 +27,8 @@ players Player 2 DUP(<>) ; Create dealer and player
 handPrompt BYTE "Your current hand value: ", 0
 choicePrompt BYTE "Enter 1 to HIT or 2 to STAY: ", 0
 dealerHandMsg BYTE "Dealer's final hand value: ", 0
+dealerbust BYTE "Dealer busted", 0
+youbust BYTE "You busted", 0
 youWinMsg BYTE "YOU WON!", 0
 youLoseMsg BYTE "YOU LOST!", 0
 cardDisplay BYTE "Card 1: ", 0
@@ -200,7 +202,13 @@ main PROC
 
     ; bust territory
     cmp players[eax].soft, 0
+    jne noBustyou
+    mov edx, OFFSET youbust       ; Load address of youbust message
+    call WriteString                ; Display the message
+    call Crlf                       ; New line
+    cmp players[eax].soft, 0
     je youLost
+    noBustyou:
 
     ; has a soft hand so we can subtract 10 and continue
     sub ecx, 10
@@ -285,8 +293,13 @@ main PROC
 
     ; bust territory
     cmp players[eax].soft, 0
+    jne noBust
+    mov edx, OFFSET dealerbust       ; Load address of "YOU WON!" message
+    call WriteString                ; Display the message
+    call Crlf                       ; New line
+    cmp players[eax].soft, 0
     je youWon
-
+    noBust:
     ; has a soft hand so we can subtract 10 and continue
     sub edx, 10
     mov players[eax].soft, 0
