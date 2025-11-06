@@ -50,7 +50,7 @@ calcSum PROC ; eax stores player, ecx should store the sum at the end
     ; second card
     mov ebx, 0
     mov bl, players[eax].second_card
-    mov bl, cards[ebx].value
+    mov bl, cards[ebx * TYPE card].value
     cmp bx, 9
     jle notFace2
 
@@ -65,6 +65,9 @@ calcSum PROC ; eax stores player, ecx should store the sum at the end
     notAce2:
     ; add two cards
     add ecx, ebx
+
+    add ecx, 2 ; this should align it with real values rather than each being 1 lower
+
     pop ebx
     ret
 calcSum ENDP
@@ -155,12 +158,27 @@ main PROC
     ; calc player's card values
     mov eax, 0
     call calcSum ; this will make ecx the value of the cards combined and set soft to 1 or 0
+    mov edx, 0
+    mov dl, cards[ebx * TYPE card].value ; used to store new card value
 
+
+    decision:
     ; Player chooses hit, stay (if hit continue to hit)
+
+
+    ; if hit
+    inc ebx; pick card off top of deck
+
+
+    ; if stay, just continue to dealer's turn
 
     ; dealer chooses hit/stay
 
     ; winner decided
+
+    youLost:
+
+    youWon:
 
     call ExitProcess
   quit:
