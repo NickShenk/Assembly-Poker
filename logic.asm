@@ -40,6 +40,16 @@ fillTable PROC ; eax stores the current player and ebx the current card
     ret
 fillTable ENDP
 
+fillPlayers PROC
+     NextPlayer:
+    mov eax, 0
+    call fillTable
+    inc eax
+    cmp eax, 5
+    jne NextPlayer
+    ret
+fillPlayers ENDP
+
 main PROC
     ; initialize cards
     mov ecx, 52
@@ -116,7 +126,7 @@ main PROC
 
     shl ebx, 1
     mov players[eax].first_card, bl
-    call fillTable
+    call fillTable ; hope this worked correctly :(
     inc ebx
     mov players[eax].second_card, bl
     call fillTable
@@ -125,6 +135,31 @@ main PROC
     jne fillPlayers
     ; EBX now stores the top of the card pile ! IMPORTANT !
 
+    ; round of bets
+
+    ; end of betting
+
+    ; draw 3 cards
+    mov ecx, 3
+    NextCard:
+    inc ebx ; card off the top of the deck
+    call fillPlayers
+    dec ecx
+    cmp ecx, 0
+    jnz NextCard
+    ; second round of betting
+    ; end of betting
+    ; draw 1 card
+    inc ebx ; card off the top of the deck
+    call fillPlayers
+    ; third round of betting
+    ; end of betting
+    ; draw one card
+    inc ebx ; card off the top of the deck
+    call fillPlayers
+    ; last round of betting
+    ; end of betting
+    ; announce winner
 
     ; end of intializing each player
 
