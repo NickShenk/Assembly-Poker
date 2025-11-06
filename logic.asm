@@ -36,7 +36,15 @@ fillTable PROC ; eax stores the current player and ebx the current card
     shl si, cl
     or di, si
     mov players[eax].cards[edx], di
+    cmp cl, 0
+    jnz Notace
+    ; handle ace
+    mov si, 1
+    shl si, 13
+    or di, si
+    mov players[eax].cards[edx], di
 
+    Notace:
     pop ecx
     ret
 fillTable ENDP
@@ -51,8 +59,103 @@ fillPlayers PROC
     ret
 fillPlayers ENDP
 
-calcPoints PROC
 
+
+calcPoints PROC ; eax is player location
+    push ecx ; use ecx to store info
+    push ebx ; use as counter
+    push edx
+
+    ; four of a kind
+    mov bp, 0
+    and bp, players[eax].cards[0]
+    and bp, players[eax].cards[1]
+    and bp, players[eax].cards[2]
+    and bp, players[eax].cards[3]
+
+    mov di, 1
+    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
+    ; check for 5 bits in a row
+    traverse:
+    dec ebx
+    and di, bp
+    cmp di, 1
+    je fourKind
+    cmp ebx, 0
+    jnz traverse
+
+    ; flush
+
+
+
+    ; check for straights
+    mov bp, 0
+    or bp, players[eax].cards[0]
+    or bp, players[eax].cards[1]
+    or bp, players[eax].cards[2]
+    or bp, players[eax].cards[3]
+    mov di, 1
+    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
+    ; check for 5 bits in a row
+    reset:
+    mov dx, 0
+    traversest:
+    dec ebx
+    and di, bp
+    cmp di, 1
+    jne reset
+    inc dx
+    cmp dx, 5
+    je straight
+    cmp ebx, 0
+    jnz traverse
+
+
+    ; three of a kind
+
+    ; two pair
+
+    ; pair
+
+    
+
+    ; highcard/nothing
+    mov players[eax].points, 0
+    pop ebx
+    pop ecx
+    ret
+    fourKind:
+    mov players[eax].points, 6
+    pop ebx
+    pop ecx
+    ret
+    flush:
+    mov players[eax].points, 5
+    pop ebx
+    pop ecx
+    ret
+    straight:
+    mov players[eax].points, 4
+    pop ebx
+    pop ecx
+    ret
+    threeKind:
+    mov players[eax].points, 3
+    pop ebx
+    pop ecx
+    ret
+    twoPair:
+    mov players[eax].points, 2
+    pop ebx
+    pop ecx
+    ret
+    onePair:
+    mov players[eax].points, 1
+    pop ebx
+    pop ecx
+    ret
+
+    
 calcPoints ENDP
 
 
