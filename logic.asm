@@ -24,22 +24,49 @@ players Player 2 DUP(<>) ; Create dealer and player
 .code
 
 calcSum PROC ; eax stores player, ecx should store the sum at the end
-    push ecx
     push ebx
+
+    ;reset soft flag
+    mov players[eax].soft, 0
+
     ; first card
     mov ecx, 0
     mov cl, players[eax].first_card
-    mov cx, cards[ecx]
-    ; check if ace
+    mov cl, cards[ecx].value
 
+    cmp cx, 9
+    jle notFace
+    mov cx, 9
+
+    notFace:
+
+
+    ; check if ace
+    cmp cx, 0
+    jne notAce
+    mov players[eax].soft, 1
+    mov ecx, 10
+    notAce:
     ; second card
     mov ebx, 0
     mov bl, players[eax].second_card
-    mov bx, cards[ebx]
+    mov bl, cards[ebx].value
+    cmp bx, 9
+    jle notFace2
+
+    mov bx, 9
+
+    notFace2:
     ;check if ace
-
+    cmp bx, 0
+    jne notAce2
+    mov players[eax].soft, 1
+    mov ebx, 10
+    notAce2:
+    ; add two cards
+    add ecx, ebx
     pop ebx
-
+    ret
 calcSum ENDP
 
 main PROC
@@ -124,6 +151,10 @@ main PROC
     ; round of bets
 
     ; end of betting
+
+    ; calc player's card values
+    mov eax, 0
+    call calcSum ; this will make ecx the value of the cards combined and set soft to 1 or 0
 
     ; Player chooses hit, stay (if hit continue to hit)
 
