@@ -21,6 +21,21 @@ Player ENDS
 
 players Player 2 DUP(<>) ; Create dealer and player
 
+; CHRIS: String definitions for output messages
+; Source: Irvine32 library documentation - WriteString requires null-terminated strings
+; Reference: https://csc.csudh.edu/mmccullough/asm/help/source/irvinelib/writestring.htm
+handPrompt BYTE "Your current hand value: ", 0
+choicePrompt BYTE "Enter 1 to HIT or 2 to STAY: ", 0
+dealerHandMsg BYTE "Dealer's final hand value: ", 0
+youWinMsg BYTE "YOU WON!", 0
+youLoseMsg BYTE "YOU LOST!", 0
+cardDisplay BYTE "Card 1: ", 0
+cardDisplay2 BYTE "Card 2: ", 0
+; Card suit symbols using ASCII
+; Source: https://www.gamedev.net/forums/topic/337396-displaying-hearts-clubs-spades-diamonds/
+; ASCII codes: 3=heart, 4=diamond, 5=club, 6=spade
+suitSymbols BYTE 3, 4, 5, 6  ; hearts, diamonds, clubs, spades
+
 .code
 
 calcSum PROC ; eax stores player, ecx should store the sum at the end
@@ -193,13 +208,45 @@ main PROC
     
     playerTurn:
     ; CHRIS : display their hand amount and cards(optional for cards)
+    ; Source: Irvine32 WriteString and WriteInt documentation
+    ; Reference: https://csc.csudh.edu/mmccullough/asm/help/source/irvinelib/writeint.htm
+    ; Reference: https://www.philadelphia.edu.jo/academics/qhamarsheh/uploads/Lecture%2016%20Procedures-I.pdf
+    
+    ; Display hand value message
+    push eax                        ; Save player index
+    push ecx                        ; Save hand value
+    mov edx, OFFSET handPrompt      ; Load address of prompt string
+    call WriteString                ; Display "Your current hand value: "
+    pop ecx                         ; Restore hand value
+    mov eax, ecx                    ; Move hand value to EAX for display
+    call WriteDec                   ; Display the hand value as unsigned decimal
+    call Crlf                       ; New line - carriage return/line feed
+                                    ; Source: https://csc.csudh.edu/mmccullough/asm/help/source/irvinelib/crlf.htm
+    pop eax                         ; Restore player index
+
+
     ; Player chooses hit, stay (if hit continue to hit)
 
 
     ; CHRIS : Take choice input
+    ; Source: ReadInt procedure from Irvine32 library
+    ; Reference: https://csc.csudh.edu/mmccullough/asm/help/source/irvinelib/readint.htm
+    ; ReadInt reads a 32-bit signed integer from standard input into EAX
+    
+    push eax                        ; Save player index
+    push ecx                        ; Save hand value
+    mov edx, OFFSET choicePrompt    ; Load address of choice prompt
+    call WriteString                ; Display "Enter 1 to HIT or 2 to STAY: "
+    call ReadInt                    ; Read user input into EAX
+                                    ; Reference: https://stackoverflow.com/questions/2718332/how-can-i-do-input-output-on-a-console-with-masm
+    mov edi, eax                    ; Store choice in EDI temporarily
+    pop ecx                         ; Restore hand value
+    pop eax                         ; Restore player index
     
     ; choice (jump if choice condition is met, else stay)
-    jmp hit ; remake decision
+    cmp edi, 1                      ; Compare choice with 1 (HIT)
+    je hit                          ; If user chose 1, jump to hit
+    ; Otherwise, player chose to STAY, continue to dealer's turn
 
 
     ; dealer chooses hit/stay ; make sure to mul * TYPE Player to eax for calc sum
@@ -211,16 +258,45 @@ main PROC
     pop ecx ; return player's hand to dealer
 
     ; dealer hits while their hand is less than 17 or until above player's
-
     ; CHRIS I will store dealer's end hand value in edx display it
-    ; winner decided
+    ; Source: Same WriteString and WriteDec procedures used above
+    
+    push eax                        ; Save registers
+    push ecx                        
+    mov edx, OFFSET dealerHandMsg   ; Load dealer hand message
+    call WriteString                ; Display "Dealer's final hand value: "
+    pop ecx                         ; Restore player hand value
+    pop eax                         ; Restore register
+    
+    push ecx                        ; Save player hand
+    mov eax, edx                    ; Move dealer hand value to EAX
+    call WriteDec                   ; Display dealer's hand value
+    call Crlf                       ; New line
+    pop ecx                         ; Restore player hand
+    
+    ; Determine winner by comparing player (ecx) vs dealer (edx)
+    cmp ecx, edx                    ; Compare player hand to dealer hand
+    jg youWon                       ; If player > dealer, player wins
+    jmp youLost                     ; Otherwise, player loses
 
     youLost:
     ; CHRIS add a "you lose" message
+    ; Source: WriteString to display null-terminated string
+    ; Reference: https://people.uncw.edu/ricanekk/teaching/spring05/csc241/slides/chapt_05.pdf
+    
+    mov edx, OFFSET youLoseMsg      ; Load address of "YOU LOST!" message
+    call WriteString                ; Display the message
+    call Crlf                       ; New line
+    jmp endGame                     ; Jump to end
 
     youWon:
     ; CHRIS add a "you won" message
-
+    
+    mov edx, OFFSET youWinMsg       ; Load address of "YOU WON!" message
+    call WriteString                ; Display the message
+    call Crlf                       ; New line
+    
+    endGame:
     call ExitProcess
   quit:
     exit
