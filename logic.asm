@@ -1,6 +1,6 @@
-; COMMIT 4 right here
-; Replace raw numbers with readable ranks.
-; What: PrintCard maps 11-14 -> J/Q/K/A else decimal.
+;  5 yea
+;  Centralized rendering of the table for reuse.
+; What: ShowTable prints both hands, chips, bets, and pot.
 
 INCLUDE Irvine32.inc
 
@@ -23,11 +23,16 @@ currentBet WORD 0
 
 gameTitle BYTE "=== SIMPLE 2-PLAYER POKER ===",0Dh,0Ah
           BYTE "Highest card wins!",0Dh,0Ah,0
-p1msg BYTE "Player 1 (YOU): ",0
-p2msg BYTE "Player 2 (AI):  ",0
+p1msg   BYTE "Player 1 (YOU)",0Dh,0Ah,0
+p2msg   BYTE "Player 2 (AI)",0Dh,0Ah,0
+cardmsg BYTE "  Cards: ",0
+chipmsg BYTE "  Chips: $",0
+betmsg  BYTE "  Bet: $",0
+potmsg  BYTE 0Dh,0Ah,"POT: $",0
 
 .code
 
+; --- SimpleShuffle
 SimpleShuffle PROC
     push eax ebx ecx
     mov ecx, 30
@@ -48,7 +53,7 @@ SimpleShuffle PROC
     ret
 SimpleShuffle ENDP
 
-; AL = 2..14
+; --- PrintCard
 PrintCard PROC
     push eax
     push edx
@@ -83,11 +88,74 @@ PrintCard PROC
     ret
 PrintCard ENDP
 
-main PROC
+ShowTable PROC
+    push eax
+    push edx
+
     call Clrscr
     mov edx, OFFSET gameTitle
     call WriteString
 
+    ; P1
+    mov edx, OFFSET p1msg
+    call WriteString
+    mov edx, OFFSET cardmsg
+    call WriteString
+    mov al, p1card1
+    call PrintCard
+    mov al, p1card2
+    call PrintCard
+    call Crlf
+
+    mov edx, OFFSET chipmsg
+    call WriteString
+    movzx eax, p1chips
+    call WriteDec
+    call Crlf
+
+    mov edx, OFFSET betmsg
+    call WriteString
+    movzx eax, p1bet
+    call WriteDec
+    call Crlf
+    call Crlf
+
+    ; P2
+    mov edx, OFFSET p2msg
+    call WriteString
+    mov edx, OFFSET cardmsg
+    call WriteString
+    mov al, p2card1
+    call PrintCard
+    mov al, p2card2
+    call PrintCard
+    call Crlf
+
+    mov edx, OFFSET chipmsg
+    call WriteString
+    movzx eax, p2chips
+    call WriteDec
+    call Crlf
+
+    mov edx, OFFSET betmsg
+    call WriteString
+    movzx eax, p2bet
+    call WriteDec
+    call Crlf
+
+    ; Pot
+    mov edx, OFFSET potmsg
+    call WriteString
+    movzx eax, pot
+    call WriteDec
+    call Crlf
+
+    pop edx
+    pop eax
+    ret
+ShowTable ENDP
+
+main PROC
     call Randomize
     call SimpleShuffle
 
@@ -100,22 +168,7 @@ main PROC
     mov al, deck[3]
     mov p2card2, al
 
-    mov edx, OFFSET p1msg
-    call WriteString
-    mov al, p1card1
-    call PrintCard
-    mov al, p1card2
-    call PrintCard
-    call Crlf
-
-    mov edx, OFFSET p2msg
-    call WriteString
-    mov al, p2card1
-    call PrintCard
-    mov al, p2card2
-    call PrintCard
-    call Crlf
-
+    call ShowTable
     INVOKE ExitProcess, 0
 main ENDP
 END main
