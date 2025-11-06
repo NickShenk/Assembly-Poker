@@ -16,6 +16,7 @@ Player STRUCT
  cards WORD 4 DUP(0) ; data structure for finding flushes, straights, pairs, ect.
  bet WORD 0
  balance WORD 1000
+ points WORD 0
 Player ENDS
 
 
@@ -49,6 +50,11 @@ fillPlayers PROC
     jne NextPlayer
     ret
 fillPlayers ENDP
+
+calcPoints PROC
+
+calcPoints ENDP
+
 
 main PROC
     ; initialize cards
@@ -123,6 +129,7 @@ main PROC
     mov players[eax].cards[1], 0
     mov players[eax].cards[2], 0
     mov players[eax].cards[3], 0
+    mov players[eax].points, 0
 
     shl ebx, 1
     mov players[eax].first_card, bl
