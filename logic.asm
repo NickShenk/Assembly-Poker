@@ -18,7 +18,7 @@ Player STRUCT
  balance WORD 1000
 Player ENDS
 
-players player 5 DUP(<>) ; Create 5 players
+players Player 5 DUP(<>) ; Create 5 players
 
 .code
 main PROC
@@ -48,6 +48,8 @@ main PROC
     ; shuffle deck
     ;randomize learned using this https://stackoverflow.com/questions/10963554/generate-random-number-in-a-range-in-assembly
     call randomize
+
+    DealHand:
     mov ecx, 52
     
     shuffle:
@@ -74,7 +76,25 @@ main PROC
     jg shuffle
     ; end of shuffle
     
-    ; fill out each player
+    ; DEAL CARDS TO PLAYERS
+    
+    mov ecx, 0
+    fillPlayers:
+    mov ebx, ecx ; eax is used to track card index while ecx is tracking player index
+    mov eax, ecx ; used for type player multiplication
+
+    mov edi, TYPE Player
+    mul edi
+
+    shl ebx, 1
+    mov players[eax].first_card, bl
+    inc ebx
+    mov players[eax].second_card, bl
+    inc ecx
+    cmp ecx, 5
+    jne fillPlayers
+    ; ECX now stores the top of the card pile ! IMPORTANT !
+
 
     ; end of intializing each player
 
