@@ -13,200 +13,34 @@ random WORD ?
 Player STRUCT
  first_card BYTE 0 ; index of card in deck
  second_card BYTE 0 ; index of card in deck
- cards WORD 4 DUP(0) ; data structure for finding flushes, straights, pairs, ect.
+ soft BYTE 0; keep track if there is an Ace or not (this means sum of values can be subtracted by 10)
  bet WORD 0
  balance WORD 1000
- points WORD 0
 Player ENDS
 
 
-players Player 5 DUP(<>) ; Create 5 players
+players Player 2 DUP(<>) ; Create dealer and player
 
 .code
 
-fillTable PROC ; eax stores the current player and ebx the current card
+calcSum PROC ; eax stores player, ecx should store the sum at the end
     push ecx
+    push ebx
+    ; first card
+    mov ecx, 0
+    mov cl, players[eax].first_card
+    mov cx, cards[ecx]
+    ; check if ace
 
-    mov si, 1 ; add 1 to flip one bit (value)
-    mov edx, 0 ; clear edx
-    mov edi, 0 ; clear edi
-    mov dl, cards[ebx * TYPE card].suit
-    mov di, players[eax].cards[edx]
-    mov cl, cards[ebx * TYPE card].value
-    shl si, cl
-    or di, si
-    mov players[eax].cards[edx], di
-    cmp cl, 0
-    jnz Notace
-    ; handle ace
-    mov si, 1
-    shl si, 13
-    or di, si
-    mov players[eax].cards[edx], di
+    ; second card
+    mov ebx, 0
+    mov bl, players[eax].second_card
+    mov bx, cards[ebx]
+    ;check if ace
 
-    Notace:
-    pop ecx
-    ret
-fillTable ENDP
-
-fillPlayers PROC
-    mov eax, 0
-    NextPlayer:
-    call fillTable
-    inc eax
-    cmp eax, 5
-    jne NextPlayer
-    ret
-fillPlayers ENDP
-
-
-countBitCol PROC ; ebx is the col, eax is the player
-    push ecx
-    mov ecx, 1
-    shl ecx, ebx
-    ; ebx here becomes the counter
-    CountCol:
-    move ebx, 0
-    and ecx, players[eax].cards[ebx]
-    ; #TODO if ecx is not zero then increment count
-    inc ebx
-    cmp ebx, 4
-    jne CountCol
-    ret
-countBitsCol ENDP
-
-countBitRow PROC ; ebx is the row, eax is the player
-    push ecx
-    
-    move ecx, players[eax].cards[ebx]
-    push eax
-    mov eax, ecx ; eax becomes the row
-    mov ecx, 0 ; ecx becomes the counter
-    CountRow:
-    and eax, 1 
-    inc ecx
-    cmp ecx, 14
-    jne CountCol
-    pop eax
-    ret 
-countBitsRow ENDP
-
-
-calcPoints PROC ; eax is player location
-    push ecx ; use ecx to store info
-    push ebx ; use as counter
-    push edx
-
-    ; four of a kind
-    mov bp, 0
-    and bp, players[eax].cards[0]
-    and bp, players[eax].cards[1]
-    and bp, players[eax].cards[2]
-    and bp, players[eax].cards[3]
-
-    mov di, 1
-    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
-    ; check for 5 bits in a row
-    traverse:
-    dec ebx
-    and di, bp
-    cmp di, 1
-    je fourKind
-    cmp ebx, 0
-    jnz traverse
-
-    ; flush
-    mov bp, 0
-    mov di, 1
-    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
-    ; check for 5 bits in a row
-    reset:
-    mov dx, 0
-    traversest:
-    dec ebx
-    and di, players[eax].cards[bp]
-    shl players[eax].cards[bp]
-    cmp di, 1
-    jne reset
-    inc dx
-    cmp dx, 5
-    je straight
-    cmp ebx, 0
-    jnz traverse
-
-
-
-    ; check for straights
-    mov bp, 0
-    or bp, players[eax].cards[0]
-    or bp, players[eax].cards[1]
-    or bp, players[eax].cards[2]
-    or bp, players[eax].cards[3]
-    mov di, 1
-    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
-    ; check for 5 bits in a row
-    reset:
-    mov dx, 0
-    traversest:
-    dec ebx
-    and di, bp
-    shl bp
-    cmp di, 1
-    jne reset
-    inc dx
-    cmp dx, 5
-    je straight
-    cmp ebx, 0
-    jnz traverse
-
-
-    ; three of a kind
-
-    ; two pair
-
-    ; pair
-
-    
-
-    ; highcard/nothing
-    mov players[eax].points, 0
     pop ebx
-    pop ecx
-    ret
-    fourKind:
-    mov players[eax].points, 6
-    pop ebx
-    pop ecx
-    ret
-    flush:
-    mov players[eax].points, 5
-    pop ebx
-    pop ecx
-    ret
-    straight:
-    mov players[eax].points, 4
-    pop ebx
-    pop ecx
-    ret
-    threeKind:
-    mov players[eax].points, 3
-    pop ebx
-    pop ecx
-    ret
-    twoPair:
-    mov players[eax].points, 2
-    pop ebx
-    pop ecx
-    ret
-    onePair:
-    mov players[eax].points, 1
-    pop ebx
-    pop ecx
-    ret
 
-    
-calcPoints ENDP
-
+calcSum ENDP
 
 main PROC
     ; initialize cards
@@ -277,20 +111,13 @@ main PROC
     mov edi, TYPE Player
     mul edi
 
-    mov players[eax].cards[0], 0
-    mov players[eax].cards[1], 0
-    mov players[eax].cards[2], 0
-    mov players[eax].cards[3], 0
-    mov players[eax].points, 0
 
     shl ebx, 1
     mov players[eax].first_card, bl
-    call fillTable ; hope this worked correctly :(
     inc ebx
     mov players[eax].second_card, bl
-    call fillTable
     inc ecx
-    cmp ecx, 5
+    cmp ecx, 2
     jne dealPlayers
     ; EBX now stores the top of the card pile ! IMPORTANT !
 
@@ -298,29 +125,11 @@ main PROC
 
     ; end of betting
 
-    ; draw 3 cards
-    mov ecx, 3
-    NextCard:
-    inc ebx ; card off the top of the deck
-    call fillPlayers
-    dec ecx
-    cmp ecx, 0
-    jnz NextCard
-    ; second round of betting
-    ; end of betting
-    ; draw 1 card
-    inc ebx ; card off the top of the deck
-    call fillPlayers
-    ; third round of betting
-    ; end of betting
-    ; draw one card
-    inc ebx ; card off the top of the deck
-    call fillPlayers
-    ; last round of betting
-    ; end of betting
-    ; announce winner
+    ; Player chooses hit, stay (if hit continue to hit)
 
-    ; end of intializing each player
+    ; dealer chooses hit/stay
+
+    ; winner decided
 
     call ExitProcess
   quit:
