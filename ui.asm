@@ -12,20 +12,26 @@ menuMsg    BYTE 0Dh,0Ah,"Main Menu:",0Dh,0Ah,\
             "2. Quit",0Dh,0Ah,\
             "Select an option: ",0
 inputBuffer BYTE 8 DUP(0)
-startMsg    BYTE 0Dh,0Ah,"(Poker game coming soon...)",0Dh,0Ah,0
-quitMsg     BYTE 0Dh,0Ah,"Quitting. Goodbye!",0Dh,0Ah,0
+startMsg     BYTE 0Dh,0Ah,"(Poker game coming soon...)",0Dh,0Ah,0
+quitMsg      BYTE 0Dh,0Ah,"Quitting. Goodbye!",0Dh,0Ah,0
 
-topNameMsg      BYTE 0Dh,0Ah,"        [Bob]    $1475   Bet: 20",0Dh,0Ah,0
-leftNameMsg     BYTE " [Jeff] $900  Bet: 0",0
+; === Mock test data for dynamic UI seat rendering (for upcoming backend integration) ===
+playerNames  BYTE "Bob",0,"Jeff",0,"Joe",0,"You",0
+playerChips  DWORD 1475, 900, 2150, 1125
+playerBets   DWORD 20, 0, 40, 80
+numSeats     DWORD 4
+
+playerColors DWORD lightGreen+(black*16), lightCyan+(black*16), lightMagenta+(black*16), lightBlue+(black*16)
+
 centerTitleMsg  BYTE 0Dh,0Ah,"==== COMMUNITY CARDS ====   Pot: $120   Street: FLOP",0Dh,0Ah,0
 centerCardsMsg  BYTE "  [AH][TS][8C][  ][  ]",0Dh,0Ah,0
-rightNameMsg    BYTE "    [Joe] $2150 Bet: 40",0Dh,0Ah,0
-bottomNameMsg   BYTE 0Dh,0Ah,"       * YOU *   $1125 Bet: 80",0Dh,0Ah,0
 
-playerColors  DWORD lightGreen + (black*16), lightCyan + (black*16), lightMagenta + (black*16), lightBlue + (black*16)
+chipsMsg    BYTE " Chips: ",0
+betMsg      BYTE " Bet: ",0
 
 .code
 main PROC
+    ; Print welcome, prompt for name
     mov edx, OFFSET welcomeMsg
     call WriteString
     call Crlf
@@ -72,22 +78,61 @@ doQuit:
     exit
 main ENDP
 
+; ----------------------------------
+; DrawPokerTable: Print all players
+; ------------------------------------------
+
 DrawPokerTable PROC
     call Clrscr
 
-    ; Top player (Bob)
-    mov eax, [playerColors]
+    mov esi, 0                        ; Seat index
+    mov ecx, [numSeats]
+drawSeatsLoop:
+    ; Set text color for this seat
+    mov eax, [playerColors + esi*4]
     call SetTextColor
-    mov edx, OFFSET topNameMsg
-    call WriteString
 
-    ; Left player (Jeff)
-    mov eax, [playerColors+4]
-    call SetTextColor
-    mov edx, OFFSET leftNameMsg
-    call WriteString
+    ; Print player name (offset calculation for zero-terminated names)
+    mov edi, 0
+    mov edx, OFFSET playerNames
+    mov ebx, esi
+    findName:
+        cmp ebx, 0
+        je printName
+        ; Move to next null byte for next name
+        nextNameChar:
+            cmp BYTE PTR [edx], 0
+            je foundNull
+            inc edx
+            jmp nextNameChar
+        foundNull:
+            inc edx      ; next name
+            dec ebx
+            jmp findName
+    printName:
+        call WriteString
 
-    ; Center (community) yellow, then red for cards
+    ; Print chips
+    mov edx, OFFSET chipsMsg
+    call WriteString
+    mov eax, [playerChips + esi * 4]
+    mov edx, eax
+    call WriteDec
+
+    ; Print bet
+    mov edx, OFFSET betMsg
+    call WriteString
+    mov eax, [playerBets + esi * 4]
+    mov edx, eax
+    call WriteDec
+
+    call Crlf
+
+    inc esi
+    cmp esi, ecx
+    jl drawSeatsLoop
+
+    ; Community cards and round info
     mov eax, yellow + (black*16)
     call SetTextColor
     mov edx, OFFSET centerTitleMsg
@@ -96,18 +141,6 @@ DrawPokerTable PROC
     mov eax, lightRed + (black*16)
     call SetTextColor
     mov edx, OFFSET centerCardsMsg
-    call WriteString
-
-    ; Right player (Joe)
-    mov eax, [playerColors+8]
-    call SetTextColor
-    mov edx, OFFSET rightNameMsg
-    call WriteString
-
-    ; Bottom player (YOU)
-    mov eax, [playerColors+12]
-    call SetTextColor
-    mov edx, OFFSET bottomNameMsg
     call WriteString
 
     mov eax, white + (black*16)
