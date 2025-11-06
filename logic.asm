@@ -18,9 +18,28 @@ Player STRUCT
  balance WORD 1000
 Player ENDS
 
+
 players Player 5 DUP(<>) ; Create 5 players
 
 .code
+
+fillTable PROC ; eax stores the current player and ebx the current card
+    push ecx
+
+    mov si, 1 ; add 1 to flip one bit (value)
+    mov edx, 0 ; clear edx
+    mov edi, 0 ; clear edi
+    mov dl, cards[ebx * TYPE card].suit
+    mov di, players[eax].cards[edx]
+    mov cl, cards[ebx * TYPE card].value
+    shl si, cl
+    or di, si
+    mov players[eax].cards[edx], di
+
+    pop ecx
+    ret
+fillTable ENDP
+
 main PROC
     ; initialize cards
     mov ecx, 52
@@ -44,6 +63,10 @@ main PROC
     cmp ecx,0 
     jnz initialize
     ; end of intialization
+
+
+
+
     start:
     ; shuffle deck
     ;randomize learned using this https://stackoverflow.com/questions/10963554/generate-random-number-in-a-range-in-assembly
@@ -86,14 +109,21 @@ main PROC
     mov edi, TYPE Player
     mul edi
 
+    mov players[eax].cards[0], 0
+    mov players[eax].cards[1], 0
+    mov players[eax].cards[2], 0
+    mov players[eax].cards[3], 0
+
     shl ebx, 1
     mov players[eax].first_card, bl
+    call fillTable
     inc ebx
     mov players[eax].second_card, bl
+    call fillTable
     inc ecx
     cmp ecx, 5
     jne fillPlayers
-    ; ECX now stores the top of the card pile ! IMPORTANT !
+    ; EBX now stores the top of the card pile ! IMPORTANT !
 
 
     ; end of intializing each player
