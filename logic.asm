@@ -171,7 +171,7 @@ main PROC
     ; this means we picked up an ace
     ; jump ahead if ecx > 10
     cmp ecx, 10
-    jg handleCard:
+    jg handleCard
     ; else we have an ace acting as 11 and it needs to be changed to soft
     mov players[eax].soft, 1
     mov edx, 10
