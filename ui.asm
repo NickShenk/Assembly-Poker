@@ -16,12 +16,13 @@ inputBuffer BYTE 8 DUP(0)
 startMsg   BYTE 0Dh,0Ah,"(Poker game coming soon...)",0Dh,0Ah,0
 quitMsg    BYTE 0Dh,0Ah,"Quitting. Goodbye!",0Dh,0Ah,0
 
-; === Table Drawing Strings ===
-topNameMsg     BYTE 0Dh,0Ah,"        [Bob]        ",0Dh,0Ah,0
-leftNameMsg    BYTE " [Jeff]",0
-centerMsg      BYTE "    <community cards>   ",0
-rightNameMsg   BYTE "   [Joe]",0Dh,0Ah,0
-bottomNameMsg  BYTE 0Dh,0Ah,"        [You]        ",0Dh,0Ah,0
+; === Player Table Data (static example for UI) ===
+topNameMsg      BYTE 0Dh,0Ah,"     [Bob]    $1475   Bet:  20           ",0Dh,0Ah,0
+leftNameMsg     BYTE " [Jeff] $900  Bet:  0",0
+centerTitleMsg  BYTE 0Dh,0Ah,"====== COMMUNITY CARDS ======   Pot: $120   Street: FLOP",0Dh,0Ah,0
+centerCardsMsg  BYTE "   [AH][TS][8C][  ][  ]",0Dh,0Ah,0
+rightNameMsg    BYTE " [Joe] $2150 Bet:  40",0Dh,0Ah,0
+bottomNameMsg   BYTE 0Dh,0Ah,"      * YOU *   $1125 Bet:  80",0Dh,0Ah,0
 
 .code
 main PROC
@@ -76,22 +77,25 @@ doQuit:
     exit
 main ENDP
 
-; Table Drawing Section: Clears screen and shows table players layout hehehrre yess 
+; === Table Drawing Section: Clears screen and shows table players layout and chips ===
 DrawPokerTable PROC
     call Clrscr                       ; Clear terminal for clean redraw
 
-    ; Draw top player (centered)
+    ; Draw top player
     mov edx, OFFSET topNameMsg
     call WriteString
 
-    ; Draw left, center table, right, and bottom players
+    ; Draw left seat, community, right seat
     mov edx, OFFSET leftNameMsg
     call WriteString
-    mov edx, OFFSET centerMsg
+    mov edx, OFFSET centerTitleMsg
+    call WriteString
+    mov edx, OFFSET centerCardsMsg
     call WriteString
     mov edx, OFFSET rightNameMsg
     call WriteString
 
+    ; Draw bottom player (YOU, marked with star)
     mov edx, OFFSET bottomNameMsg
     call WriteString
 
