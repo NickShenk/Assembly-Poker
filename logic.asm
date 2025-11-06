@@ -112,7 +112,7 @@ main PROC
     ; DEAL CARDS TO PLAYERS
     
     mov ecx, 0
-    fillPlayers:
+    dealPlayers:
     mov ebx, ecx ; eax is used to track card index while ecx is tracking player index
     mov eax, ecx ; used for type player multiplication
 
@@ -132,7 +132,7 @@ main PROC
     call fillTable
     inc ecx
     cmp ecx, 5
-    jne fillPlayers
+    jne dealPlayers
     ; EBX now stores the top of the card pile ! IMPORTANT !
 
     ; round of bets
