@@ -60,6 +60,37 @@ fillPlayers PROC
 fillPlayers ENDP
 
 
+countBitCol PROC ; ebx is the col, eax is the player
+    push ecx
+    mov ecx, 1
+    shl ecx, ebx
+    ; ebx here becomes the counter
+    CountCol:
+    move ebx, 0
+    and ecx, players[eax].cards[ebx]
+    ; #TODO if ecx is not zero then increment count
+    inc ebx
+    cmp ebx, 4
+    jne CountCol
+    ret
+countBitsCol ENDP
+
+countBitRow PROC ; ebx is the row, eax is the player
+    push ecx
+    
+    move ecx, players[eax].cards[ebx]
+    push eax
+    mov eax, ecx ; eax becomes the row
+    mov ecx, 0 ; ecx becomes the counter
+    CountRow:
+    and eax, 1 
+    inc ecx
+    cmp ecx, 14
+    jne CountCol
+    pop eax
+    ret 
+countBitsRow ENDP
+
 
 calcPoints PROC ; eax is player location
     push ecx ; use ecx to store info
@@ -85,6 +116,23 @@ calcPoints PROC ; eax is player location
     jnz traverse
 
     ; flush
+    mov bp, 0
+    mov di, 1
+    mov ebx, 14 ; right to left to find highest straights first, 1 extra for decrement at start
+    ; check for 5 bits in a row
+    reset:
+    mov dx, 0
+    traversest:
+    dec ebx
+    and di, players[eax].cards[bp]
+    shl players[eax].cards[bp]
+    cmp di, 1
+    jne reset
+    inc dx
+    cmp dx, 5
+    je straight
+    cmp ebx, 0
+    jnz traverse
 
 
 
@@ -102,6 +150,7 @@ calcPoints PROC ; eax is player location
     traversest:
     dec ebx
     and di, bp
+    shl bp
     cmp di, 1
     jne reset
     inc dx
