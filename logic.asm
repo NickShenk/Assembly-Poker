@@ -41,8 +41,8 @@ fillTable PROC ; eax stores the current player and ebx the current card
 fillTable ENDP
 
 fillPlayers PROC
-     NextPlayer:
     mov eax, 0
+    NextPlayer:
     call fillTable
     inc eax
     cmp eax, 5
