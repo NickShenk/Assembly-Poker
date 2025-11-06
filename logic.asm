@@ -259,12 +259,55 @@ main PROC
 
     ; dealer hits while their hand is less than 17 or until above player's
     ; CHRIS I will store dealer's end hand value in edx display it
-    ; Source: Same WriteString and WriteDec procedures used above
+    jmp dealerChoice
+    push ecx
+    dealerHit: ; ----------------- dealer hits logic -----------------
+    inc ebx ; pick new card off the top
+    mov ecx, 0
+    mov cl, cards[ebx * TYPE card].value ; used to store new card value
+    ; jump ahead if cl > 0
+    cmp cl, 0
+    jg handleCardDealer
+    ; this means we picked up an ace
+    ; jump ahead if edx > 10
+    cmp edx, 10
+    jg handleCardDealer
+    ; else we have an ace acting as 11 and it needs to be changed to soft
+    mov players[eax].soft, 1
+    mov ecx, 10
+
+    handleCardDealer:
+    add edx, ecx
+    add edx, 1
+    ; check if bust, check if soft then sub ten if soft
+    cmp edx, 21
+    jle dealerChoice
+
+    ; bust territory
+    cmp players[eax].soft, 0
+    je youWon
+
+    ; has a soft hand so we can subtract 10 and continue
+    sub edx, 10
+    mov players[eax].soft, 0
     
+    pop ecx
+
+    dealerChoice:
+    ; hit again if less than 17 and less then ecx
+    cmp edx, 17
+    jl dealerHit
+    cmp edx, ecx
+    jl dealerHit
+    ; dealer stays continues down
+
+    ; Source: Same WriteString and WriteDec procedures used above
     push eax                        ; Save registers
-    push ecx                        
+    push ecx   
+    push edx
     mov edx, OFFSET dealerHandMsg   ; Load dealer hand message
     call WriteString                ; Display "Dealer's final hand value: "
+    pop edx
     pop ecx                         ; Restore player hand value
     pop eax                         ; Restore register
     
