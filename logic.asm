@@ -185,7 +185,7 @@ main PROC
 
     ; bust territory
     cmp players[eax].soft, 0
-    je youLose
+    je youLost
 
     ; has a soft hand so we can subtract 10 and continue
     sub ecx, 10
@@ -203,11 +203,10 @@ main PROC
 
 
     ; dealer chooses hit/stay ; make sure to mul * TYPE Player to eax for calc sum
-    mov edx, TYPLE Player
-    mul eax, edx
+    mov eax, TYPE Player
     mov edx, 0
     push ecx ; push player's hand value to stack
-    calcSum ; dealer's hand is now in ecx
+    call calcSum ; dealer's hand is now in ecx
     mov edx, ecx
     pop ecx ; return player's hand to dealer
 
